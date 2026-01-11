@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-    <title>单机卡五星</title>
+    <title>奶奶的麻将 (彩色版)</title>
     <style>
         /* --- 1. 全局设置 --- */
         html, body {
@@ -25,6 +25,11 @@
             --opp-area-h: 220px; 
         }
 
+        /* --- 3. 颜色定义 (给奶奶看的清楚配色) --- */
+        .c-tong { color: #0055aa !important; } /* 筒子：深蓝 */
+        .c-tiao { color: #008800 !important; } /* 条子/发财：深绿 */
+        .c-red  { color: #cc0000 !important; } /* 红中：大红 */
+        
         /* 启动层 (Z: 20000) */
         #start-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -96,7 +101,6 @@
 
         .opp-name { font-size: 24px; color: #ddd; margin-bottom: 5px; text-shadow: 1px 1px 2px #000; display: flex; align-items: center; gap: 10px;}
         
-        /* 对手手牌：默认折叠状态 */
         .opp-hand { 
             background: rgba(0,0,0,0.3); padding: 5px 20px; border-radius: 10px; 
             font-size: 22px; color: #ccc; cursor: pointer; transition: background 0.2s;
@@ -107,7 +111,6 @@
         .opp-melds { display: flex; height: calc(var(--tile-h) * 0.7); margin-bottom: 5px; justify-content: flex-start; }
         .opp-box:last-child .opp-melds { justify-content: flex-end; }
         
-        /* 牌河 */
         .river { 
             width: 110%; height: calc(var(--tile-h) * 1.8); 
             background: rgba(0,0,0,0.15); border-radius: 8px; 
@@ -115,17 +118,19 @@
         }
         .opp-box:last-child .river { flex-direction: row-reverse; }
 
-        /* 中间信息区 (Z: 30) */
+        /* 关键修复：中间大牌层级提升 (Z: 500) */
+        /* 确保它浮在手牌(Z:40)之上 */
         .center-stage { 
             position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%);
             display: flex; flex-direction: column; justify-content: center; align-items: center; 
-            pointer-events: none; z-index: 30;
+            pointer-events: none; 
+            z-index: 500; /* 大幅提高层级 */
         }
         #msg { 
-            font-size: 36px; color: white; background: rgba(0,0,0,0.7); 
+            font-size: 36px; color: white; background: rgba(0,0,0,0.85); 
             padding: 10px 40px; border-radius: 50px; margin-bottom: 15px; font-weight: bold; 
             text-align: center; pointer-events: auto;
-            border: 2px solid rgba(255,255,255,0.3); box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            border: 2px solid rgba(255,255,255,0.5); box-shadow: 0 4px 15px rgba(0,0,0,0.8);
             white-space: nowrap;
         }
         #big-card { width: calc(var(--tile-w) * 2.2); height: calc(var(--tile-h) * 2.2); display: flex; justify-content: center; align-items: center; }
@@ -147,9 +152,10 @@
         
         .my-info-row { display: flex; justify-content: center; align-items: center; height: 40px; margin-bottom: 5px; }
         
+        /* 按钮层级也需要高 (Z: 600) */
         .btn-row { 
             display: flex; justify-content: center; gap: 50px; height: 80px; align-items: center; 
-            margin-bottom: 15px; z-index: 200; pointer-events: none;
+            margin-bottom: 15px; z-index: 600; pointer-events: none;
         }
         .btn-row button { pointer-events: auto; } 
         
@@ -204,11 +210,9 @@
 
         /* 手牌查看器专用样式 */
         .tile-viewer {
-            width: calc(var(--tile-w) * 1.6); /* 宽1.6倍 */
-            height: calc(var(--tile-h) * 1.6); /* 高1.6倍 */
-            margin: 8px 12px; /* 间距拉大 */
-            
-            /* 复制基础样式 */
+            width: calc(var(--tile-w) * 1.6); 
+            height: calc(var(--tile-h) * 1.6); 
+            margin: 8px 12px; 
             background: #fdfdfd; border-radius: 12px; 
             position: relative; display: flex; justify-content: center; align-items: center; 
             box-shadow: 4px 6px 10px rgba(0,0,0,0.6); border: 1px solid #999;
@@ -216,8 +220,8 @@
             font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
         }
         .tile-viewer .tile-txt {
-            font-size: calc(var(--tile-w) * 1.6 * 1.4); /* 字体适配超大 */
-            margin-top: -25px; /* 修正位置 */
+            font-size: calc(var(--tile-w) * 1.6 * 1.4); 
+            margin-top: -25px; 
             transform: scale(1.1);
         }
         .tile-viewer .bai-ban {
@@ -237,9 +241,9 @@
         .viewer-box {
             background: rgba(255,255,255,0.15); padding: 40px; border-radius: 20px;
             border: 3px solid gold; 
-            display: flex; flex-wrap: wrap; /* 允许换行 */
+            display: flex; flex-wrap: wrap; 
             justify-content: center;
-            width: 90%; max-width: 1400px; /* 限制最大宽度 */
+            width: 90%; max-width: 1400px; 
             box-shadow: 0 0 80px rgba(0,0,0,0.9);
         }
         .viewer-tip { color: gold; font-size: 28px; margin-bottom: 25px; font-weight: bold; text-shadow: 2px 2px 4px black; }
@@ -604,7 +608,6 @@
         if(vBox) {
             var hH = "";
             for(var i=0; i<p.hand.length; i++) {
-                // 使用新的 tile-viewer 样式，不使用 scale
                 hH += div(p.hand[i], 'tile-viewer'); 
             }
             vBox.innerHTML = hH;
@@ -750,14 +753,32 @@
         }
     }
     
+    // --- 颜色处理 ---
     function div(v, cls) { 
         if(v===20) return '<div class="tile '+cls+'"><div class="bai-ban"></div></div>';
-        return '<div class="tile '+cls+'"><div class="tile-txt">'+TILE_CHARS[v]+'</div></div>'; 
+        
+        // 分配颜色
+        var colorClass = "";
+        if(v >= 0 && v <= 8) colorClass = "c-tong";      // 筒子 0-8
+        else if(v >= 9 && v <= 17) colorClass = "c-tiao";// 条子 9-17
+        else if(v === 18) colorClass = "c-red";          // 红中
+        else if(v === 19) colorClass = "c-tiao";         // 发财
+        
+        return '<div class="tile '+cls+'"><div class="tile-txt '+colorClass+'">'+TILE_CHARS[v]+'</div></div>'; 
     }
+    
     function divClick(v, sel, idx, isSmall) { 
-        var content = (v===20)?'<div class="bai-ban"></div>':'<div class="tile-txt">'+TILE_CHARS[v]+'</div>';
-        return '<div class="tile '+(sel?'selected':'')+' '+(isSmall?'tile-small':'')+'" onclick="clk('+idx+')">'+content+'</div>'; 
+        if(v===20) return '<div class="tile '+(sel?'selected':'')+' '+(isSmall?'tile-small':'')+'" onclick="clk('+idx+')"><div class="bai-ban"></div></div>';
+        
+        var colorClass = "";
+        if(v >= 0 && v <= 8) colorClass = "c-tong";
+        else if(v >= 9 && v <= 17) colorClass = "c-tiao";
+        else if(v === 18) colorClass = "c-red";
+        else if(v === 19) colorClass = "c-tiao";
+
+        return '<div class="tile '+(sel?'selected':'')+' '+(isSmall?'tile-small':'')+'" onclick="clk('+idx+')"><div class="tile-txt '+colorClass+'">'+TILE_CHARS[v]+'</div></div>'; 
     }
+
     function showActs(list, showBase) {
         var box = document.getElementById('btn-box'); 
         if(!box) return;
