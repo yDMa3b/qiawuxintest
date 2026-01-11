@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-    <title>奶奶的麻将 (Redmi Pad Pro版)</title>
+    <title>奶奶的麻将 (修复版)</title>
     <style>
         /* --- 1. 基础设置 --- */
         html, body {
@@ -13,23 +13,23 @@
             display: flex; flex-direction: column;
         }
 
-        /* --- 2. 响应式变量系统 --- */
+        /* --- 2. 响应式布局变量 --- */
         :root {
-            /* 手机/默认竖屏尺寸 */
+            /* 默认变量 */
             --tile-w: 44px; --tile-h: 64px;
             --font-sm: 12px; --font-md: 16px; --font-lg: 20px; --font-xl: 36px;
             --btn-pad: 10px 25px;
-            --opp-height: 150px;
+            --opp-height: 140px;
         }
 
-        /* --- 平板/横屏适配 (针对 Redmi Pad Pro 12.1") --- */
-        @media screen and (orientation: landscape) {
+        /* --- 平板/横屏 深度适配 --- */
+        @media screen and (min-width: 600px) and (orientation: landscape) {
             :root {
-                /* 稍微调整牌的大小，横屏不需要竖屏那么巨大，但要清晰 */
-                --tile-w: 58px; --tile-h: 82px; 
-                --font-sm: 18px; --font-md: 22px; --font-lg: 28px; --font-xl: 50px;
-                --btn-pad: 15px 40px;
-                --opp-height: 220px; /* 增加对手区域高度 */
+                /* 加大牌面，适配2.5K屏幕 */
+                --tile-w: 66px; --tile-h: 94px; 
+                --font-sm: 20px; --font-md: 24px; --font-lg: 30px; --font-xl: 50px;
+                --btn-pad: 12px 50px;
+                --opp-height: 200px;
             }
         }
 
@@ -57,17 +57,12 @@
         }
         .lobby-title { font-size: var(--font-xl); color: gold; font-weight: bold; margin-bottom: 30px; text-shadow: 4px 4px 8px #000; font-family: sans-serif; }
         .lobby-info { font-size: var(--font-lg); color: #fff; margin-bottom: 40px; background: rgba(0,0,0,0.4); padding: 10px 30px; border-radius: 30px; font-family: sans-serif; }
-        
-        .room-container { 
-            display: flex; gap: 30px; flex-wrap: nowrap; /* 横屏不换行 */
-            justify-content: center; width: 90%; 
-        }
+        .room-container { display: flex; gap: 30px; justify-content: center; width: 90%; }
         .room-btn {
             width: 25%; min-width: 200px; height: 220px; border-radius: 20px;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             color: white; box-shadow: 0 8px 16px rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.3);
-            cursor: pointer; transition: transform 0.1s; font-family: sans-serif;
-            position: relative;
+            cursor: pointer; transition: transform 0.1s; font-family: sans-serif; position: relative;
         }
         .room-btn:active { transform: scale(0.95); }
         .bg-green { background: linear-gradient(to bottom, #66bb6a, #43a047); }
@@ -86,88 +81,78 @@
         .header { 
             flex: 0 0 50px; display: flex; justify-content: space-between; align-items: center; 
             padding: 0 30px; font-size: var(--font-md); color: gold; background: rgba(0,0,0,0.3); font-family: sans-serif;
-            z-index: 50;
         }
-        .main-area { flex: 1; display: flex; flex-direction: column; position: relative; width: 100%; }
+        .main-area { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
 
-        /* --- 核心布局：对手区域 (横屏优化) --- */
+        /* 对手区域 - 左右布局优化 */
         .opponents { 
             flex: 0 0 var(--opp-height); 
-            display: flex; 
-            justify-content: space-between; /* 左右分开 */
-            padding: 10px 40px; 
-            align-items: flex-start;
+            display: flex; justify-content: space-between; 
+            padding: 15px 40px 0 40px; 
+            width: 100%; box-sizing: border-box;
         }
-        .opp-box { 
-            width: 35%; /* 变窄，给中间留空 */
-            display: flex; flex-direction: column; align-items: center; 
-        }
-        /* 针对左上角对手的微调 */
+        .opp-box { width: 400px; display: flex; flex-direction: column; }
+        /* 左上对手靠左 */
         .opp-box:first-child { align-items: flex-start; }
-        /* 针对右上角对手的微调 */
+        /* 右上对手靠右 */
         .opp-box:last-child { align-items: flex-end; }
 
-        .opp-name { font-size: var(--font-md); color: #ddd; margin-bottom: 5px; text-shadow: 1px 1px 2px #000; font-family: sans-serif; display: flex; align-items: center; gap: 5px;}
+        .opp-name { font-size: var(--font-md); color: #ddd; margin-bottom: 5px; text-shadow: 1px 1px 2px #000; font-family: sans-serif; display: flex; align-items: center; gap: 8px;}
         .opp-hand { background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 10px; font-size: var(--font-md); color: #ccc; font-family: sans-serif; }
-        .opp-melds { display: flex; height: calc(var(--tile-h) * 0.7); margin-bottom: 5px; justify-content: center; }
-        .opp-hand-open { display: flex; justify-content: center; flex-wrap: wrap; }
+        .opp-melds { display: flex; height: calc(var(--tile-h) * 0.7); margin-bottom: 5px; justify-content: flex-start; }
+        .opp-box:last-child .opp-melds { justify-content: flex-end; }
+        .opp-hand-open { display: flex; justify-content: flex-start; flex-wrap: wrap; }
         
         .river { 
-            width: 100%; height: calc(var(--tile-h) * 1.6); 
+            width: 100%; height: calc(var(--tile-h) * 2); 
             background: rgba(0,0,0,0.15); border-radius: 8px; 
-            display: flex; flex-wrap: wrap; align-content: flex-start; padding: 4px; margin-top: 5px; 
+            display: flex; flex-wrap: wrap; align-content: flex-start; padding: 5px; margin-top: 5px; 
         }
-        /* 横屏下，牌河(弃牌堆)稍微宽一点 */
-        @media screen and (orientation: landscape) {
-            .river { width: 120%; height: calc(var(--tile-h) * 1.8); }
-            /* 左边对手牌河向右延伸 */
-            .opp-box:first-child .river { align-self: flex-start; }
-            /* 右边对手牌河向左延伸 */
-            .opp-box:last-child .river { align-self: flex-end; flex-direction: row-reverse; } 
-            .opp-box:last-child .river .tile-dropped { margin: -6px -4px; } /* 修正反向排列间距 */
-        }
+        /* 右侧对手牌河反向排列 */
+        .opp-box:last-child .river { flex-direction: row-reverse; }
 
         /* 听牌提示 */
-        .ting-box { display: none; background: rgba(0,0,0,0.7); padding: 4px 10px; border-radius: 10px; border: 2px solid #ff9800; align-items: center; margin-bottom: 5px; }
-        .ting-txt { color: #ff9800; font-size: var(--font-md); margin-right: 5px; font-family: sans-serif; }
-        .liang-tag { background: #ff9800; color: black; font-weight: bold; font-size: var(--font-sm); padding: 2px 6px; border-radius: 4px; margin-left: 5px; display: none; border: 1px solid white; font-family: sans-serif;}
+        .ting-box { display: none; background: rgba(0,0,0,0.8); padding: 5px 15px; border-radius: 10px; border: 2px solid #ff9800; align-items: center; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .ting-txt { color: #ff9800; font-size: var(--font-md); margin-right: 5px; font-family: sans-serif; white-space: nowrap; }
+        .liang-tag { background: #ff9800; color: black; font-weight: bold; font-size: var(--font-sm); padding: 2px 6px; border-radius: 4px; display: none; border: 1px solid white; font-family: sans-serif;}
 
-        /* 中间信息区 (出牌展示/消息) */
+        /* 中间信息 */
         .center-stage { 
             flex: 1; display: flex; flex-direction: column; 
             justify-content: center; align-items: center; 
-            position: relative; top: -40px; /* 稍微上移 */
-            pointer-events: none; /* 防止遮挡点击 */
+            pointer-events: none; /* 让点击穿透 */
+            z-index: 10;
         }
         #msg { 
             font-size: var(--font-lg); color: white; background: rgba(0,0,0,0.6); 
-            padding: 10px 30px; border-radius: 30px; margin-bottom: 20px; font-weight: bold; 
+            padding: 10px 40px; border-radius: 30px; margin-bottom: 20px; font-weight: bold; 
             font-family: sans-serif; text-align: center; pointer-events: auto;
+            border: 1px solid rgba(255,255,255,0.2);
         }
-        #big-card { 
-            width: calc(var(--tile-w) * 1.5); height: calc(var(--tile-h) * 1.5); 
-            display: flex; justify-content: center; align-items: center; 
-        }
+        #big-card { width: calc(var(--tile-w) * 2); height: calc(var(--tile-h) * 2); display: flex; justify-content: center; align-items: center; }
 
         /* 玩家区域 */
         .my-area { 
-            flex: 0 0 auto; display: flex; flex-direction: column; justify-content: flex-end; 
-            padding-bottom: 10px; width: 100%; 
+            flex: 0 0 auto; display: flex; flex-direction: column; 
+            justify-content: flex-end; padding-bottom: 10px; width: 100%; 
+            position: relative; z-index: 20;
         }
-        .my-river-box { display: flex; justify-content: center; margin-bottom: 5px; }
+        .my-river-box { display: flex; justify-content: center; margin-bottom: 5px; pointer-events: none;}
         .my-river { 
-            width: 50%; /* 玩家牌河不要太宽 */
-            height: calc(var(--tile-h) * 1.4); 
-            background: rgba(0,0,0,0.2); border-radius: 8px; display: flex; flex-wrap: wrap; justify-content: center; padding: 4px; 
+            width: 550px; height: calc(var(--tile-h) * 1.5); 
+            background: rgba(0,0,0,0.2); border-radius: 8px; 
+            display: flex; flex-wrap: wrap; justify-content: center; padding: 5px; pointer-events: auto;
         }
         
-        .my-info-row { display: flex; justify-content: center; align-items: center; height: 40px; margin-bottom: 5px; }
+        .my-info-row { display: flex; justify-content: center; align-items: center; height: 50px; margin-bottom: 0px; }
         
-        /* 按钮组 - 横屏优化 */
+        /* 按钮组 */
         .btn-row { 
             display: flex; justify-content: center; gap: 40px; height: 80px; align-items: center; 
-            margin-bottom: 10px; z-index: 200; 
+            margin-bottom: 5px; z-index: 200; pointer-events: none;
         }
+        .btn-row button { pointer-events: auto; } /* 按钮可点 */
+        
         .btn { 
             padding: var(--btn-pad); border-radius: 50px; border: none; 
             font-size: var(--font-lg); font-weight: bold; box-shadow: 0 5px 10px rgba(0,0,0,0.5); 
@@ -178,12 +163,12 @@
         .btn-peng { background: #1976d2; color: white; }
         .btn-gang { background: #7b1fa2; color: white; }
         .btn-pass { background: #666; color: white; }
-        .btn-liang { background: linear-gradient(to bottom, #ffeb3b, #fbc02d); color: black; border: 3px solid white; display: none; }
+        .btn-liang { background: linear-gradient(to bottom, #ffeb3b, #fbc02d); color: black; border: 3px solid white; display: none; box-shadow: 0 0 15px #ffeb3b; }
         .btn-out { background: gold; color: black; display: none; padding: 15px 80px; border: 3px solid #fff; box-shadow: 0 0 15px gold;}
 
-        .hand-row { display: flex; justify-content: center; align-items: flex-end; padding: 0 20px 20px 20px; }
-        .my-melds { display: flex; margin-right: 30px; }
-        .my-hand { display: flex; }
+        .hand-row { display: flex; justify-content: center; align-items: flex-end; padding: 0 20px 10px 20px; }
+        .my-melds { display: flex; margin-right: 25px; align-items: flex-end; }
+        .my-hand { display: flex; align-items: flex-end; }
 
         /* 麻将牌样式 */
         .tile { 
@@ -193,14 +178,14 @@
             box-shadow: 2px 4px 5px rgba(0,0,0,0.4); border: 1px solid #bbb;
             flex-shrink: 0;
             font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+            background: linear-gradient(to bottom right, #fff, #f0f0f0);
         }
-        /* 字体大小随 tile 大小变化 */
-        .tile-txt { font-size: calc(var(--tile-w) * 0.9); line-height: 1; margin-top: -4px; }
+        .tile-txt { font-size: calc(var(--tile-w) * 0.85); line-height: 1; margin-top: -4px; color: #000; }
         
         .tile.selected { transform: translateY(-30px); border: 3px solid gold; background: #fffbe6; z-index: 10; }
-        .tile-dropped { transform: scale(0.85); margin: -6px -4px; border: 1px solid #ccc; box-shadow: none; }
-        .tile-meld { transform: scale(0.8); margin: -8px -6px; background: #eef; }
-        .tile-big { transform: scale(2.0); box-shadow: 0 0 30px yellow; z-index: 100; background: #fff; }
+        .tile-dropped { transform: scale(0.9); margin: -4px -3px; border: 1px solid #ccc; box-shadow: none; opacity: 0.95; }
+        .tile-meld { transform: scale(0.85); margin: -6px -4px; background: #eef; }
+        .tile-big { transform: scale(2.0); box-shadow: 0 0 40px rgba(255,255,0,0.6); z-index: 100; background: #fff; border: 2px solid gold; }
         .tile-small { transform: scale(0.7); margin: -10px -5px; }
         .tile-tiny { transform: scale(0.6); margin: -15px -8px; background: #fffbe6; border: 1px solid orange; }
 
@@ -222,11 +207,11 @@
 <body>
     <div id="debug-console"></div>
     <div id="start-layer">
-        <button id="start-btn" onclick="initApp()">进入游戏 (横屏版)</button>
+        <button id="start-btn" onclick="initApp()">进入游戏</button>
     </div>
 
     <div id="lobby-layer" style="display:none;">
-        <div class="lobby-title">🀄️ 单机卡五星 (HD) 🀄️</div>
+        <div class="lobby-title">🀄️ 单机卡五星 (平板HD版) 🀄️</div>
         <div class="lobby-info">您的金豆: <span id="user-score-disp-1">读取中...</span></div>
         <div class="room-container">
             <div class="room-btn bg-green" onclick="enterRoom(0)"><div class="room-name">🟢 初级场</div><div class="room-desc">底分100</div></div>
@@ -373,6 +358,26 @@
         setTimeout(drawCard, 800);
     }
 
+    // --- 核心修复：检测动作 ---
+    function checkAvailableActs(p) {
+        showActs([], true); // 重置，默认显示“出牌”
+        
+        var acts = [];
+        var canLiang = checkCanLiang(p.hand, p.meld);
+        var gangInfo = checkGang(p);
+
+        if(canLiang) acts.push('LIANG');
+        if(gangInfo) { G.gangInfo = gangInfo; acts.push('GANG'); }
+        
+        if(acts.length > 0) {
+            showActs(acts, true);
+            if(!canLiang && gangInfo) setMsg("有杠");
+            else setMsg("请选择操作");
+        } else {
+            setMsg("请出牌");
+        }
+    }
+
     function drawCard() {
         if(G.deck.length==0) { alert("流局"); backToLobby(); return; }
         var p = G.ps[G.turn]; var c = G.deck.pop(); p.hand.push(c);
@@ -386,13 +391,8 @@
             }
             if(checkWin(p.hand, p.meld)) { showActs(['HU','PASS']); setMsg("摸到好牌！"); }
             else {
-                setMsg("请出牌");
-                var canLiang = checkCanLiang(p.hand, p.meld);
-                var gangInfo = checkGang(p);
-                var acts = [];
-                if(canLiang) acts.push('LIANG');
-                if(gangInfo) { G.gangInfo=gangInfo; acts.push('GANG'); }
-                if(acts.length>0) showActs(acts, true); else showActs([], true);
+                // 修复：统一检测亮/杠
+                checkAvailableActs(p);
             }
         } else { 
             render(); setMsg((G.turn==1?"下家":"上家")+"思考中...");
@@ -484,10 +484,28 @@
         actDiscardForce(G.sel);
     }
     
+    // --- 核心修复：出牌逻辑 ---
     function actDiscardForce(idx) {
         var p = G.ps[0];
+        // 如果正在准备亮倒，先检查这张牌能不能听
+        if(G.pendingLiang) {
+            var tmpHand = p.hand.slice(); tmpHand.splice(idx, 1); tmpHand.sort(function(a,b){return a-b});
+            var tings = getWinTiles(tmpHand, p.meld);
+            if(tings.length === 0) {
+                setMsg("打这张牌不听牌，无法亮倒！"); // 阻止出牌
+                return;
+            }
+            // 验证通过
+            p.liang = true;
+            p.ting = tings;
+            G.pendingLiang = false;
+            // 立即刷新UI显示听口
+            document.getElementById('ting-box-0').style.display = 'flex';
+            var tH=""; for(var w=0;w<tings.length;w++) tH+=div(tings[w], 'tile-tiny');
+            document.getElementById('t-tiles-0').innerHTML = tH;
+        }
+
         var c = p.hand.splice(idx, 1)[0]; p.hand.sort(function(a,b){return a-b});
-        if(G.pendingLiang) { p.liang=true; G.pendingLiang=false; p.ting=getWinTiles(p.hand, p.meld); }
         hideActs(); playCard(c);
     }
 
@@ -498,6 +516,7 @@
         else { rem(p.hand, g.v, 1); for(var i=0;i<p.meld.length;i++) if(p.meld[i].v==g.v) p.meld[i].t='gang'; }
         G.gangInfo=null; hideActs(); render(); setTimeout(drawCard, 500);
     }
+    
     function doAct(a) {
         hideActs(); document.getElementById('big-card').innerHTML='';
         var p = G.ps[0]; var c = G.last;
@@ -505,12 +524,17 @@
             if(p.liang && G.turn==0) { var dc = p.hand.pop(); p.hand.sort(function(a,b){return a-b}); playCard(dc); } 
             else { G.ps[G.from].river.push(c); nextTurn(); }
         }
-        else if(a=='HU') { showResult(0, "胡牌啦", 0, "", G.from==0); } // 玩家赢ID=0
+        else if(a=='HU') { showResult(0, "胡牌啦", 0, "", G.from==0); }
         else if(a=='LIANG') actLiang();
         else if(a=='GANG') { 
             if(G.turn==0) actGangSelf(); else { rem(p.hand,c,3); p.meld.push({v:c,t:'gang'}); G.turn=0; setMsg("杠，摸一张"); setTimeout(drawCard,500); }
         }
-        else if(a=='PENG') { rem(p.hand,c,2); p.meld.push({v:c,t:'peng'}); G.turn=0; G.drawn=true; G.sel=-1; setMsg("碰，请出牌"); render(); showActs([], true); }
+        else if(a=='PENG') { 
+            rem(p.hand,c,2); p.meld.push({v:c,t:'peng'}); 
+            G.turn=0; G.drawn=true; G.sel=-1; setMsg("碰，请出牌"); render(); 
+            // 修复：碰牌后再次检测动作
+            checkAvailableActs(p);
+        }
     }
 
     function clk(idx) {
@@ -519,7 +543,7 @@
         if(p.liang && idx!=p.hand.length-1) { setMsg("亮倒后只能操作新摸的牌"); return; }
         var realIdx = (p.liang || (G.turn==0&&G.drawn)) && idx == p.hand.length-1 ? idx : idx;
         if(G.sel == realIdx) actDiscard();
-        else { G.sel = realIdx; render(); showActs([], true); }
+        else { G.sel = realIdx; render(); checkAvailableActs(p); } // 点击牌时也刷新一下按钮状态
     }
 
     // --- 算法 ---
@@ -668,11 +692,9 @@
     function setMsg(t) { document.getElementById('msg').innerText=t; }
     function showBig(v) { document.getElementById('big-card').innerHTML = div(v, 'tile-big'); }
 
-    // --- 3. 关键修改：强制横屏 (Landscape) ---
     if(window.plus){plusReady();}else{document.addEventListener('plusready',plusReady,false);}
     function plusReady(){
         plus.navigator.closeSplashscreen();
-        // 修改为强制横屏
         plus.screen.lockOrientation("landscape-primary");
     }
     
