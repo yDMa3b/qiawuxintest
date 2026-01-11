@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-    <title>奶奶的麻将 (Redmi Pad Pro 专版)</title>
+    <title>奶奶的麻将 (Redmi Pad Pro 完美版)</title>
     <style>
         /* --- 1. 全局强制设置 (针对平板优化) --- */
         html, body {
@@ -335,16 +335,12 @@
         var el2 = document.getElementById('user-score-disp-2'); if(el2) el2.innerText = SCORE;
     }
 
-    // --- 修复点：正确切换界面 ---
     function enterRoom(id) {
         var r = ROOMS[id];
         if(SCORE < r.min) { alert("金豆不足！"); return; }
         CUR_ROOM = r;
-        
-        // 【关键修复】: 必须把大厅隐藏，否则会盖住游戏层
         document.getElementById('lobby-layer').style.display = 'none';
         document.getElementById('game-layer').style.display = 'block';
-        
         document.getElementById('room-info-disp').innerText = r.name + " (底分"+r.base+")";
         updateGlobalScore();
         startGame();
@@ -367,17 +363,13 @@
         setTimeout(drawCard, 800);
     }
 
-    // --- 核心修复逻辑 ---
     function checkAvailableActs(p) {
-        showActs([], true); // 默认显示出牌
-        
+        showActs([], true);
         var acts = [];
         var canLiang = checkCanLiang(p.hand, p.meld);
         var gangInfo = checkGang(p);
-
         if(canLiang) acts.push('LIANG');
         if(gangInfo) { G.gangInfo = gangInfo; acts.push('GANG'); }
-        
         if(acts.length > 0) {
             showActs(acts, true);
             if(!canLiang && gangInfo) setMsg("有杠");
@@ -399,10 +391,7 @@
                 return;
             }
             if(checkWin(p.hand, p.meld)) { showActs(['HU','PASS']); setMsg("摸到好牌！"); }
-            else {
-                // 每次摸牌都必须检测亮倒/杠
-                checkAvailableActs(p);
-            }
+            else { checkAvailableActs(p); }
         } else { 
             render(); setMsg((G.turn==1?"下家":"上家")+"思考中...");
             setTimeout(function(){ aiPlay(p); }, 800);
@@ -411,7 +400,6 @@
 
     function aiPlay(p) {
         if(checkWin(p.hand, p.meld)) { showResult(G.turn, "电脑胡了", 0, "自摸", true); return; }
-        
         if(!p.liang && CUR_ROOM.ai > 0) {
             for(var i=0; i<p.hand.length; i++) {
                 var tmp = p.hand.slice(); var dc = tmp.splice(i,1)[0];
@@ -424,7 +412,6 @@
             }
         }
         if(p.liang) { var c = p.hand.pop(); playCard(c); return; }
-        
         var danger = (G.ps[0].liang && CUR_ROOM.ai==2) ? G.ps[0].ting : [];
         var counts={}; for(var i=0;i<p.hand.length;i++) counts[p.hand[i]]=(counts[p.hand[i]]||0)+1;
         var best = -1;
@@ -462,9 +449,7 @@
         if(id==0 || id==G.from) return false;
         var p = G.ps[id];
         var tmp = p.hand.slice(); tmp.push(c); tmp.sort(function(a,b){return a-b});
-        
         if(checkWin(tmp, p.meld)) { showResult(id, "电脑胡了", 0, "捉炮", false); return true; }
-        
         if(p.liang) return false;
         var cnt=0; for(var i=0;i<p.hand.length;i++) if(p.hand[i]==c) cnt++;
         var rate = CUR_ROOM.ai==2 ? 0.9 : 0.5;
@@ -493,22 +478,24 @@
         actDiscardForce(G.sel);
     }
     
+    // --- 核心修复：防错处理 ---
     function actDiscardForce(idx) {
         var p = G.ps[0];
-        // 亮倒前检测
         if(G.pendingLiang) {
             var tmpHand = p.hand.slice(); tmpHand.splice(idx, 1); tmpHand.sort(function(a,b){return a-b});
             var tings = getWinTiles(tmpHand, p.meld);
-            if(tings.length === 0) {
-                setMsg("打这张牌不听牌，无法亮倒！"); 
-                return;
-            }
+            if(tings.length === 0) { setMsg("打这张牌不听牌，无法亮倒！"); return; }
             p.liang = true;
             p.ting = tings;
             G.pendingLiang = false;
-            document.getElementById('ting-box-0').style.display = 'flex';
+            
+            // 安全操作DOM
+            var tBox = document.getElementById('ting-box-0');
+            if(tBox) tBox.style.display = 'flex';
+            
             var tH=""; for(var w=0;w<tings.length;w++) tH+=div(tings[w], 'tile-tiny');
-            document.getElementById('t-tiles-0').innerHTML = tH;
+            var tTiles = document.getElementById('t-tiles-0');
+            if(tTiles) tTiles.innerHTML = tH;
         }
 
         var c = p.hand.splice(idx, 1)[0]; p.hand.sort(function(a,b){return a-b});
@@ -538,7 +525,6 @@
         else if(a=='PENG') { 
             rem(p.hand,c,2); p.meld.push({v:c,t:'peng'}); 
             G.turn=0; G.drawn=true; G.sel=-1; setMsg("碰，请出牌"); render(); 
-            // 碰牌后必须再次检测亮倒/杠
             checkAvailableActs(p);
         }
     }
@@ -552,7 +538,6 @@
         else { G.sel = realIdx; render(); checkAvailableActs(p); } 
     }
 
-    // --- 算法 ---
     function checkWin(h, m) {
         if(m.length==0 && h.length==14 && is7(h)) return true;
         var c={}; for(var i=0;i<h.length;i++) c[h[i]]=(c[h[i]]||0)+1;
@@ -651,16 +636,20 @@
         document.getElementById(mId).innerHTML = mH;
         var rH=""; for(var i=0;i<p.river.length;i++) rH+=div(p.river[i], 'tile-dropped');
         document.getElementById(rId).innerHTML = rH;
-        if(tagId) document.getElementById(tagId).style.display = p.liang?'inline-block':'none';
+        
+        var tagEl = document.getElementById(tagId);
+        if(tagEl) tagEl.style.display = p.liang?'inline-block':'none';
         
         var tEl = document.getElementById(tBoxId);
         if(p.liang || (id==0 && p.liang)) {
             var tings = p.ting.length>0 ? p.ting : (id==0?getWinTiles(p.hand, p.meld):[]);
             if(tings.length>0) {
-                tEl.style.display='flex'; var tH=""; for(var w=0;w<tings.length;w++) tH+=div(tings[w], 'tile-tiny');
-                document.getElementById(tTilesId).innerHTML = tH;
-            } else tEl.style.display='none';
-        } else tEl.style.display='none';
+                if(tEl) tEl.style.display='flex'; 
+                var tH=""; for(var w=0;w<tings.length;w++) tH+=div(tings[w], 'tile-tiny');
+                var tilesEl = document.getElementById(tTilesId);
+                if(tilesEl) tilesEl.innerHTML = tH;
+            } else if(tEl) tEl.style.display='none';
+        } else if(tEl) tEl.style.display='none';
 
         var hEl = document.getElementById(hId);
         if(id==0 || p.liang) {
@@ -692,7 +681,10 @@
                 b.onclick=function(){doAct(a)}; box.appendChild(b);
             })(list[i]);
         }
-        if(showBase) document.getElementById('btn-out').style.display = 'block';
+        if(showBase) {
+            var bo = document.getElementById('btn-out');
+            if(bo) bo.style.display = 'block';
+        }
     }
     function hideActs() { document.getElementById('btn-box').innerHTML=''; }
     function setMsg(t) { document.getElementById('msg').innerText=t; }
